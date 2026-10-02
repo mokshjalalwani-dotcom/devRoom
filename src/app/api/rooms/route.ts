@@ -47,12 +47,15 @@ export async function POST(req: Request) {
 
     // Verify Turnstile (skip for CLI/extension — they use stricter IP rate limit)
     if (!isCli) {
-      if (!turnstileToken) {
-        return NextResponse.json({ error: 'Turnstile token required' }, { status: 400 })
-      }
-      const ok = await verifyTurnstile(turnstileToken, ip)
-      if (!ok) {
-        return NextResponse.json({ error: 'Turnstile verification failed' }, { status: 403 })
+      const secret = process.env.TURNSTILE_SECRET_KEY
+      if (secret && secret !== 'dev') {
+        if (!turnstileToken) {
+          return NextResponse.json({ error: 'Turnstile token required' }, { status: 400 })
+        }
+        const ok = await verifyTurnstile(turnstileToken, ip)
+        if (!ok) {
+          return NextResponse.json({ error: 'Turnstile verification failed' }, { status: 403 })
+        }
       }
     }
 
