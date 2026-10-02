@@ -35,6 +35,59 @@ html, body {
   color: var(--text-primary);
 }
 
+/* ─── Background: dot grid + ambient orbs ────────────────── */
+body {
+  /* subtle dot grid */
+  background-image: radial-gradient(var(--dot-color, rgba(0,0,0,0.08)) 1px, transparent 1px);
+  background-size: 24px 24px;
+  position: relative;
+}
+
+/* ambient orbs */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+body::before {
+  width: 500px;
+  height: 500px;
+  top: -10%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+}
+body::after {
+  width: 400px;
+  height: 400px;
+  bottom: -10%;
+  right: -5%;
+  background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%);
+}
+
+/* dark theme: brighter orbs, darker dots */
+[data-theme="dark"] body {
+  --dot-color: rgba(255,255,255,0.04);
+}
+[data-theme="dark"] body::before {
+  opacity: 0.5;
+  background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%);
+}
+[data-theme="dark"] body::after {
+  opacity: 0.45;
+  background: radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%);
+}
+
+/* ensure all page content is above orbs */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
