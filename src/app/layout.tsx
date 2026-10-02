@@ -26,11 +26,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `
             try {
-              if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
-              } else {
-                document.documentElement.classList.remove('dark')
-              }
+              const t = localStorage.getItem('theme')
+              const d = window.matchMedia('(prefers-color-scheme: dark)').matches
+              document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : t === 'dark' ? 'dark' : d ? 'dark' : 'light')
             } catch (_) {}
           `
         }} />

@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @theme {
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
@@ -29,8 +29,8 @@
 }
 
 /* Shiki Dual Themes Support */
-html.dark .shiki,
-html.dark .shiki span {
+[data-theme="dark"] .shiki,
+[data-theme="dark"] .shiki span {
   color: var(--shiki-dark) !important;
   background-color: var(--shiki-dark-bg) !important;
   font-style: var(--shiki-dark-font-style) !important;
