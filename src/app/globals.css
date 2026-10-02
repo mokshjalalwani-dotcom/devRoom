@@ -1,31 +1,49 @@
 @import 'tailwindcss';
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
 }
 
+/* ─── Light Theme (default) ─────────────────────────────── */
+:root {
+  --bg-page:      #f0f0ee;   /* warm off-white, not pure white */
+  --bg-surface:   #e8e8e5;   /* cards / panels */
+  --bg-elevated:  #ddddd9;   /* hover states, nested panels */
+  --border:       #d0d0cc;
+  --text-primary: #1a1a18;
+  --text-muted:   #6b6b66;
+  --text-subtle:  #999994;
+}
+
+/* ─── Dark Theme ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-page:      #0a0d12;
+  --bg-surface:   #111318;
+  --bg-elevated:  #1a1d23;
+  --border:       #272b33;
+  --text-primary: #e8eaf0;
+  --text-muted:   #8891a4;
+  --text-subtle:  #545d6e;
+}
+
+/* Apply page background & text via CSS variables */
+html, body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
 /* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background-color: theme('colors.zinc.300');
+  background-color: var(--border);
   border-radius: 4px;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background-color: theme('colors.zinc.800');
-}
 ::-webkit-scrollbar-thumb:hover {
-  background-color: theme('colors.zinc.400');
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background-color: theme('colors.zinc.700');
+  background-color: var(--text-subtle);
 }
 
 /* Shiki Dual Themes Support */

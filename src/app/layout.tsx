@@ -33,7 +33,7 @@ export default function RootLayout({
           `
         }} />
       </head>
-      <body className={`${inter.variable} ${mono.variable} font-sans bg-zinc-50 dark:bg-[#0a0d12] text-zinc-900 dark:text-zinc-100 min-h-screen selection:bg-blue-500/30`}>
+      <body className={`${inter.variable} ${mono.variable} font-sans min-h-screen selection:bg-blue-500/30`}>
         {children}
         <ToastContainer />
       </body>
