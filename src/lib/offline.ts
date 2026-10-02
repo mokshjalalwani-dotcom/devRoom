@@ -1,12 +1,21 @@
+/**
+ * src/lib/offline.ts
+ * Offline queue for naive offline support (PWA).
+ */
 const QUEUE_KEY = 'devroom_offline_queue'
 
 export interface QueuedAction {
   id: string
   roomId: string
+  actionType: 'add' | 'delete'
   content: string
   type: string
   language?: string
   meta?: any
+  options?: {
+    tags?: string[]
+    burnAfterRead?: boolean
+  }
   timestamp: number
   tempId: string
 }

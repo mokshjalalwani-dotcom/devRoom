@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createRoom } from '@/lib/api'
+import { generateEncryptionKey, exportKey } from '@/lib/crypto'
 import { motion } from 'framer-motion'
-import { Clock, ArrowRight, Terminal } from 'lucide-react'
+import { Clock, ArrowRight, Terminal, Lock, Shield, Settings2, Key, HelpCircle } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { toast } from '@/components/Toast'
 
@@ -12,7 +13,12 @@ export default function LandingPage() {
   const [ttl, setTtl] = useState(86400) // 24h
   const [isCreating, setIsCreating] = useState(false)
   const [joinId, setJoinId] = useState('')
-  const [recentRooms, setRecentRooms] = useState<{id: string, expires_at: string}[]>([])
+  const [recentRooms, setRecentRooms] = useState<{id: string, expires_at: string, passcode?: string}[]>([])
+  
+  // Advanced options
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [passcode, setPasscode] = useState('')
+  const [encrypted, setEncrypted] = useState(false)
 
   useEffect(() => {
     try {
@@ -28,22 +34,35 @@ export default function LandingPage() {
   const handleCreate = async () => {
     setIsCreating(true)
     try {
-      const room = await createRoom(ttl)
+      // 1. Create Room on Server
+      const room = await createRoom(ttl, { 
+        passcode: passcode.trim() || undefined,
+        encrypted
+      })
       
+      // 2. Add to Recent
       const recent = JSON.parse(localStorage.getItem('devroom_recent') || '[]')
-      recent.unshift({ id: room.id, expires_at: room.expires_at })
+      recent.unshift({ id: room.id, expires_at: room.expires_at, passcode: passcode.trim() || undefined })
       localStorage.setItem('devroom_recent', JSON.stringify(recent.slice(0, 5)))
       
-      router.push(`/room/${room.id}`)
-    } catch (e) {
-      toast.error('Failed to create room')
+      // 3. Handle Encryption Key
+      let hash = ''
+      if (encrypted) {
+        const key = await generateEncryptionKey()
+        const keyString = await exportKey(key)
+        hash = `#k=${keyString}`
+      }
+      
+      router.push(`/room/${room.id}${hash}`)
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create room')
       setIsCreating(false)
     }
   }
 
   const handleJoin = () => {
     if (joinId.trim()) {
-      router.push(`/room/${joinId.trim()}`)
+      router.push(`/room/${joinId.trim().replace(/^[/]/, '')}`)
     }
   }
 
@@ -54,7 +73,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-zinc-50 dark:bg-[#0a0d12]">
       {/* Background decoration */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/5 dark:bg-blue-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px] pointer-events-none" />
@@ -99,6 +118,52 @@ export default function LandingPage() {
             </div>
             
             <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 mb-4 transition"
+            >
+              <Settings2 size={14} /> {showAdvanced ? 'Hide Options' : 'Advanced Options'}
+            </button>
+            
+            {showAdvanced && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden mb-6 flex flex-col gap-4 text-left border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                
+                <div>
+                  <label className="flex items-center justify-between text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                    <span className="flex items-center gap-1.5"><Key size={14} className="text-zinc-400" /> Passcode</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    value={passcode}
+                    onChange={e => setPasscode(e.target.value)}
+                    placeholder="Optional passcode"
+                    className="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none"
+                  />
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition">
+                  <div className="pt-0.5">
+                    <input 
+                      type="checkbox" 
+                      checked={encrypted}
+                      onChange={e => setEncrypted(e.target.checked)}
+                      className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500" 
+                    />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                      <Shield size={14} className={encrypted ? 'text-emerald-500' : 'text-zinc-400'} /> End-to-End Encryption
+                    </div>
+                    <div className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                      Keys are generated in your browser and never sent to the server. Anyone joining will need the exact URL containing the secret key.
+                    </div>
+                  </div>
+                </label>
+
+              </motion.div>
+            )}
+
+            <button
               onClick={handleCreate}
               disabled={isCreating}
               className="group w-full flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 py-3.5 rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-zinc-900/20 dark:shadow-white/10"
@@ -134,8 +199,8 @@ export default function LandingPage() {
               <div className="space-y-2">
                 {recentRooms.map(r => (
                   <div key={r.id} className="flex items-center justify-between p-3.5 rounded-xl bg-white/50 dark:bg-zinc-900/30 border border-zinc-200/50 dark:border-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
-                    <button onClick={() => router.push(`/room/${r.id}`)} className="flex-1 text-left font-mono text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      /{r.id}
+                    <button onClick={() => router.push(`/room/${r.id}`)} className="flex-1 text-left flex items-center gap-2 font-mono text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                      /{r.id} {r.passcode && <Lock size={12} className="text-zinc-400" />}
                     </button>
                     <button onClick={() => removeRecent(r.id)} className="text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 p-1.5 rounded-lg transition-colors text-xs font-medium">
                       Remove

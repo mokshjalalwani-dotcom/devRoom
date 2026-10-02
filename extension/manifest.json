@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Temporal Dev Room",
+  "version": "1.0",
+  "description": "Quickly paste snippets to a Temporal Dev Room.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": [
+    "storage",
+    "activeTab"
+  ]
+}
