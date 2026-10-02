@@ -94,12 +94,14 @@ export function detectContent(text: string): DetectionResult {
     return { type: 'code', language: 'html' }
   }
   
-  if (/^(const|let|var|function|import|export|class|interface|type)\b/m.test(trimmed) || /=>/.test(trimmed)) {
-    return { type: 'code', language: 'typescript' }
+  // Python
+  if (/^(def\s+\w+\(|from\s+[\w.]+\s+import|import\s+(os|sys|json|math|time|datetime|re|django|flask|requests)\b)/m.test(trimmed) || (/:\s*$/m.test(trimmed) && /^\s*(class|def|if|elif|else|for|while|try|except|with)\b/m.test(trimmed))) {
+    return { type: 'code', language: 'python' }
   }
   
-  if (/^(def|class|import|from)\b/m.test(trimmed) || /if __name__ == .__main__.:/.test(trimmed)) {
-    return { type: 'code', language: 'python' }
+  // TypeScript / JavaScript
+  if (/^(const|let|var|function|export\s+default|interface|type\s+\w+\s*=)\b/m.test(trimmed) || /=>/.test(trimmed) || /import\s+.*?from\s+['"]/.test(trimmed) || /console\.log/.test(trimmed) || /^\s*class\s+\w+\s*(extends\s+\w+)?\s*\{/m.test(trimmed)) {
+    return { type: 'code', language: 'typescript' }
   }
   
   if (/^(public|private|protected)\s+(class|interface|enum)\b/.test(trimmed)) {
