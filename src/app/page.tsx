@@ -11,6 +11,7 @@ export default function LandingPage() {
   const router = useRouter()
   const [ttl, setTtl] = useState(86400) // 24h
   const [isCreating, setIsCreating] = useState(false)
+  const [joinId, setJoinId] = useState('')
   const [recentRooms, setRecentRooms] = useState<{id: string, expires_at: string}[]>([])
 
   useEffect(() => {
@@ -37,6 +38,12 @@ export default function LandingPage() {
     } catch (e) {
       toast.error('Failed to create room')
       setIsCreating(false)
+    }
+  }
+
+  const handleJoin = () => {
+    if (joinId.trim()) {
+      router.push(`/room/${joinId.trim()}`)
     }
   }
 
@@ -99,6 +106,26 @@ export default function LandingPage() {
               {isCreating ? 'Creating...' : 'Create Instant Room'}
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
+
+            <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Paste Room ID..." 
+                  value={joinId}
+                  onChange={(e) => setJoinId(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+                  className="flex-1 bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
+                />
+                <button 
+                  onClick={handleJoin}
+                  disabled={!joinId.trim()}
+                  className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-5 rounded-xl font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition disabled:opacity-50"
+                >
+                  Join
+                </button>
+              </div>
+            </div>
           </div>
 
           {recentRooms.length > 0 && (

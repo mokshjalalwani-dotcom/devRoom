@@ -24,28 +24,26 @@ export function CodeHighlighter({ code, language = 'text' }: { code: string, lan
     function runHighlight(highlighter: any) {
       if (!mounted) return
       
-      const isDark = document.documentElement.classList.contains('dark')
-      const theme = isDark ? 'github-dark' : 'github-light'
-      
       const loadedLangs = highlighter.getLoadedLanguages()
-      // Fallback aliases
       let lang = language
       if (lang === 'command') lang = 'bash'
       
       const resolvedLang = loadedLangs.includes(lang as any) ? lang : 'text'
       
       try {
-        const out = highlighter.codeToHtml(code, { lang: resolvedLang, theme })
+        const out = highlighter.codeToHtml(code, { 
+          lang: resolvedLang, 
+          themes: {
+            light: 'github-light',
+            dark: 'github-dark'
+          }
+        })
         setHtml(out)
       } catch (e) {
-        // Simple escaping
         const escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
         setHtml(`<pre><code>${escaped}</code></pre>`)
       }
     }
-
-    // React to theme changes (basic approach: re-render is usually triggered by parent if needed, 
-    // but here we just do a one-off render based on current theme class)
     
     return () => { mounted = false }
   }, [code, language])
